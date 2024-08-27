@@ -53,27 +53,21 @@ if (isset($_POST['login'])) {
     }
 }
 
-// Ders ekleme
-if (isset($_POST['add_course']) && $_SESSION['role'] == 'tutor') {
-    $course_name = $_POST['course_name'];
-    $price = $_POST['price'];
-    $tutor_id = $_SESSION['user_id'];
+// Şifremi Unuttum özelliği (burada basit bir örnek olarak geçerli, geliştirmek gerekebilir)
+if (isset($_POST['forgot_password'])) {
+    $email = $_POST['email'];
 
-    $stmt = $pdo->prepare("INSERT INTO courses (course_name, tutor_id, price) VALUES (?, ?, ?)");
-    $stmt->execute([$course_name, $tutor_id, $price]);
+    // Email adresine göre kullanıcıyı bul
+    $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
+    $stmt->execute([$email]);
+    $user = $stmt->fetch();
 
-    echo "Ders başarıyla eklendi!";
-}
-
-// Derslere kaydolma
-if (isset($_POST['enroll']) && $_SESSION['role'] == 'student') {
-    $course_id = $_POST['course_id'];
-    $student_id = $_SESSION['user_id'];
-
-    $stmt = $pdo->prepare("INSERT INTO enrollments (student_id, course_id, status) VALUES (?, ?, 'failed')");
-    $stmt->execute([$student_id, $course_id]);
-
-    echo "Derse başarıyla kaydoldunuz!";
+    if ($user) {
+        echo "Şifre yenileme bağlantısı e-posta adresinize gönderildi!";
+        // Burada şifre sıfırlama bağlantısı oluşturup e-posta ile göndermeniz gerekir.
+    } else {
+        echo "Bu e-posta adresi ile kayıtlı bir kullanıcı bulunamadı!";
+    }
 }
 ?>
 
@@ -81,13 +75,12 @@ if (isset($_POST['enroll']) && $_SESSION['role'] == 'student') {
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>TutorMate</title>
+    <title>Yeditepe Dershane</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
         body {
-            background-image: url('https://images.unsplash.com/photo-1699891730669-2d15cf3a5979?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
-            background-size: cover;
-            background-position: center;
+            background-image: url('https://images.unsplash.com/photo-1710678832243-cbfb55a0b806?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+            backdrop-filter: blur(7px);
             height: 100vh;
             margin: 0;
             display: flex;
@@ -96,21 +89,44 @@ if (isset($_POST['enroll']) && $_SESSION['role'] == 'student') {
         }
 
         .form-container {
-            background: rgba(0, 13, 26, 0.85);
-            padding: 40px;
+            background-image: url('https://images.unsplash.com/photo-1679592098614-ae83589aa91a?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+            background-size: cover;
+            background-position: center;
             border-radius: 20px;
-            box-shadow: 0 0 15px rgba(191, 128, 255, 0.5);
-            text-align: center;
-            max-width: 500px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            display: flex;
+            max-width: 900px;
             width: 100%;
-            position: relative;
+        }
+
+        .left-section, .right-section {
+            flex: 1;
+            padding: 40px;
+            color: white;
+        }
+
+        .left-section {
+            background-color: rgba(0, 0, 0, 0.9); /* Sol tarafın üstüne siyah yarı şeffaf bir örtü ekler */
+        }
+
+        .left-section h1 {
+            font-family: "Segoe Script", cursive;
+            font-size: 80px;
+            font-weight: bold;
+        }
+
+        .left-section p {
+            font-family: "Segoe Script", cursive;
+            font-size: 37px;
+            font-weight: bold;
         }
 
         .form-group input,
         .form-group select {
             height: 50px;
             font-size: 16px;
-            color: #ffffff;
+            margin-bottom: 20px;
         }
 
         .btn-large {
@@ -118,26 +134,14 @@ if (isset($_POST['enroll']) && $_SESSION['role'] == 'student') {
             padding: 15px;
             font-size: 18px;
             border-radius: 50px;
-            transition: all 0.3s ease;
+            background: linear-gradient(45deg, #6c757d, green);
+            color: white;
             border: none;
+            transition: all 0.3s ease;
         }
 
         .btn-large:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 10px rgba(191, 128, 255, 0.5);
-        }
-
-        .brand {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 90px;
-            font-family: "Segoe Script";
-            font-weight: bold;
-            color: #bf80ff;
-            user-select: none;
-            cursor: pointer;
+            background-color: #ff4b2b;
         }
 
         .toggle-buttons {
@@ -152,7 +156,7 @@ if (isset($_POST['enroll']) && $_SESSION['role'] == 'student') {
             font-size: 20px;
             padding: 15px 0;
             border-radius: 50px;
-            background: linear-gradient(45deg, #6c757d, #bf80ff);
+            background: linear-gradient(45deg, #6c757d, green);
             border: none;
             color: white;
             transition: all 0.3s ease;
@@ -173,81 +177,118 @@ if (isset($_POST['enroll']) && $_SESSION['role'] == 'student') {
             display: block;
         }
 
-        /* CAPTCHA Kodunu daha görünür hale getirin */
         .captcha-container {
             background: #1a1a1a;
             padding: 10px;
             border-radius: 10px;
             margin-bottom: 15px;
-            color: #bf80ff;
+            background: linear-gradient(45deg, #6c757d, green);
             font-weight: bold;
             text-align: center;
         }
 
-        /* Selectbox text ve background rengi */
         .form-group select {
             background-color: #1a1a1a;
             border-color: #6c757d;
             color: #ffffff;
         }
+
+        .terms-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .terms-container input[type="checkbox"] {
+            margin-right: 10px;
+        }
+
+        .logo-container {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 1000;
+        }
+
+        .logo-container img {
+            width: 100px; /* Logonun boyutunu ayarlayabilirsiniz */
+            transition: transform 0.3s ease;
+        }
+
+        .logo-container img:hover {
+            transform: scale(1.1);
+        }
     </style>
 </head>
 <body>
-<div class="brand" onclick="location.reload();">TutorMate</div>
 <div class="form-container">
-    <div class="toggle-buttons">
-        <button id="showRegister" class="btn btn-large">Kayıt Ol</button>
-        <button id="showLogin" class="btn btn-large">Giriş Yap</button>
+    <div class="left-section">
+        <h1>Yeditepe Dershane</h1>
+        <p>7tepe is not 7 years.</p>
+    </div>
+    <div class="right-section">
+        <div class="toggle-buttons">
+            <button id="showRegister" class="btn btn-large">Kayıt Ol</button>
+            <button id="showLogin" class="btn btn-large">Giriş Yap</button>
+        </div>
+
+        <!-- Kullanıcı Kaydı Formu -->
+        <form id="registerForm" method="POST">
+            <div class="form-group">
+                <input type="text" name="username" class="form-control" placeholder="Kullanıcı Adı" required>
+            </div>
+            <div class="form-group">
+                <input type="email" name="email" class="form-control" placeholder="Email" required>
+            </div>
+            <div class="form-group">
+                <input type="password" name="password" class="form-control" placeholder="Şifre" required>
+            </div>
+            <div class="form-group terms-container">
+                <input type="checkbox" name="terms" required>
+                <label>Kullanım şartlarını ve gizlilik politikasını kabul ediyorum.</label>
+            </div>
+            <button type="submit" name="register" class="btn btn-large">Kayıt Ol</button>
+        </form>
+
+        <!-- Kullanıcı Girişi Formu -->
+        <form id="loginForm" method="POST">
+            <div class="form-group">
+                <input type="text" name="username" class="form-control" placeholder="Kullanıcı Adı" required>
+            </div>
+            <div class="form-group">
+                <input type="password" name="password" class="form-control" placeholder="Şifre" required>
+            </div>
+            <div class="form-group">
+                <input type="text" name="captcha" class="form-control" placeholder="CAPTCHA Kodu" required>
+                <div class="captcha-container">
+                    CAPTCHA Kodu: <?php echo $_SESSION['captcha']; ?>
+                </div>
+            </div>
+            <div class="form-group">
+                <button type="submit" name="forgot_password" class="btn btn-link">Şifremi Unuttum</button>
+            </div>
+            <button type="submit" name="login" class="btn btn-large">Giriş Yap</button>
+        </form>
+
+        <div class="logo-container">
+        <a href="https://obs.yeditepe.edu.tr" target="_blank">
+            <img src="https://seeklogo.com/images/Y/Yeditepe_Universitesi-logo-F2C90E3ECD-seeklogo.com.png" alt="Logo">
+        </a>
     </div>
 
-    <!-- Kullanıcı Kaydı Formu -->
-    <form id="registerForm" method="POST">
-        <div class="form-group">
-            <input type="text" name="username" class="form-control" placeholder="Kullanıcı Adı" required>
-        </div>
-        <div class="form-group">
-            <input type="email" name="email" class="form-control" placeholder="Email" required>
-        </div>
-        <div class="form-group">
-            <input type="password" name="password" class="form-control" placeholder="Şifre" required>
-        </div>
-        <div class="form-group">
-            <select name="role" class="form-control">
-                <option value="student">Ders Almak İstiyorum</option>
-                <option value="tutor">Ders Vermek İstiyorum</option>
-            </select>
-        </div>
-        <button type="submit" name="register" class="btn btn-info btn-large">Kayıt Ol</button>
-    </form>
-
-    <!-- Kullanıcı Girişi Formu -->
-    <form id="loginForm" method="POST">
-        <div class="form-group">
-            <input type="text" name="username" class="form-control" placeholder="Kullanıcı Adı" required>
-        </div>
-        <div class="form-group">
-            <input type="password" name="password" class="form-control" placeholder="Şifre" required>
-        </div>
-        <div class="form-group">
-            <input type="text" name="captcha" class="form-control" placeholder="CAPTCHA Kodu" required>
-            <div class="captcha-container">
-                CAPTCHA Kodu: <?php echo $_SESSION['captcha']; ?>
-            </div>
-        </div>
-        <button type="submit" name="login" class="btn btn-warning btn-large">Giriş Yap</button>
-    </form>
+    </div>
 </div>
 
 <script>
-    document.getElementById('showRegister').addEventListener('click', function() {
+    document.getElementById('showRegister').addEventListener('click', function () {
         document.getElementById('registerForm').classList.add('active');
         document.getElementById('loginForm').classList.remove('active');
     });
 
-    document.getElementById('showLogin').addEventListener('click', function() {
+    document.getElementById('showLogin').addEventListener('click', function () {
         document.getElementById('loginForm').classList.add('active');
         document.getElementById('registerForm').classList.remove('active');
     });
 </script>
+
 </body>
 </html>
