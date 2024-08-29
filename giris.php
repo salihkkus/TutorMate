@@ -1,6 +1,7 @@
 <?php
-// Oturum başlatma ve CAPTCHA kodu oluşturma
 session_start();
+
+// CAPTCHA kodu oluşturma
 $captcha_code = rand(1000, 9999);
 $_SESSION['captcha'] = $captcha_code;
 
@@ -17,7 +18,6 @@ try {
     die("Veritabanı bağlantısı başarısız: " . $e->getMessage());
 }
 
-// Kullanıcı kaydı
 if (isset($_POST['register'])) {
     $username = $_POST['username'];
     $email = $_POST['email'];
@@ -30,7 +30,6 @@ if (isset($_POST['register'])) {
     echo "Kayıt başarılı!";
 }
 
-// Kullanıcı girişi
 if (isset($_POST['login'])) {
     $username = $_POST['username'];
     $password = $_POST['password'];
@@ -53,18 +52,15 @@ if (isset($_POST['login'])) {
     }
 }
 
-// Şifremi Unuttum özelliği (burada basit bir örnek olarak geçerli, geliştirmek gerekebilir)
 if (isset($_POST['forgot_password'])) {
     $email = $_POST['email'];
 
-    // Email adresine göre kullanıcıyı bul
     $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
     $stmt->execute([$email]);
     $user = $stmt->fetch();
 
     if ($user) {
         echo "Şifre yenileme bağlantısı e-posta adresinize gönderildi!";
-        // Burada şifre sıfırlama bağlantısı oluşturup e-posta ile göndermeniz gerekir.
     } else {
         echo "Bu e-posta adresi ile kayıtlı bir kullanıcı bulunamadı!";
     }
@@ -86,6 +82,20 @@ if (isset($_POST['forgot_password'])) {
             display: flex;
             align-items: center;
             justify-content: center;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 3px solid white;
+            box-shadow: 0 0 15px white;
+            filter: blur(5px);
+            pointer-events: none; /* Kullanıcı etkileşimini engellemek için */
         }
 
         .form-container {
@@ -107,7 +117,7 @@ if (isset($_POST['forgot_password'])) {
         }
 
         .left-section {
-            background-color: rgba(0, 0, 0, 0.9); /* Sol tarafın üstüne siyah yarı şeffaf bir örtü ekler */
+            background-color: rgba(0, 0, 0, 0.9);
         }
 
         .left-section h1 {
@@ -147,12 +157,14 @@ if (isset($_POST['forgot_password'])) {
         .toggle-buttons {
             margin-bottom: 30px;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+            transition: all 0.3s ease;
         }
 
         .toggle-buttons button {
-            width: 45%;
-            margin: 0 5px;
+            width: 100%;
+            margin: 10px 0;
             font-size: 20px;
             padding: 15px 0;
             border-radius: 50px;
@@ -162,9 +174,14 @@ if (isset($_POST['forgot_password'])) {
             transition: all 0.3s ease;
         }
 
-        .toggle-buttons button:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 10px rgba(191, 128, 255, 0.5);
+        .toggle-buttons.active {
+            flex-direction: row;
+            justify-content: center;
+        }
+
+        .toggle-buttons.active button {
+            width: 45%;
+            margin: 0 5px;
         }
 
         #registerForm,
@@ -210,7 +227,7 @@ if (isset($_POST['forgot_password'])) {
         }
 
         .logo-container img {
-            width: 100px; /* Logonun boyutunu ayarlayabilirsiniz */
+            width: 120px;
             transition: transform 0.3s ease;
         }
 
@@ -240,7 +257,11 @@ if (isset($_POST['forgot_password'])) {
                 <input type="email" name="email" class="form-control" placeholder="Email" required>
             </div>
             <div class="form-group">
-                <input type="password" name="password" class="form-control" placeholder="Şifre" required>
+                <select name="role" class="form-control" required>
+                    <option value="" disabled selected>Kullanıcı Rolü</option>
+                    <option value="student">Öğrenci</option>
+                    <option value="tutor">Eğitmen</option>
+                </select>
             </div>
             <div class="form-group terms-container">
                 <input type="checkbox" name="terms" required>
@@ -249,7 +270,7 @@ if (isset($_POST['forgot_password'])) {
             <button type="submit" name="register" class="btn btn-large">Kayıt Ol</button>
         </form>
 
-        <!-- Kullanıcı Girişi Formu -->
+        <!-- Giriş Formu -->
         <form id="loginForm" method="POST">
             <div class="form-group">
                 <input type="text" name="username" class="form-control" placeholder="Kullanıcı Adı" required>
@@ -259,36 +280,36 @@ if (isset($_POST['forgot_password'])) {
             </div>
             <div class="form-group">
                 <input type="text" name="captcha" class="form-control" placeholder="CAPTCHA Kodu" required>
-                <div class="captcha-container">
-                    CAPTCHA Kodu: <?php echo $_SESSION['captcha']; ?>
-                </div>
             </div>
-            <div class="form-group">
-                <button type="submit" name="forgot_password" class="btn btn-link">Şifremi Unuttum</button>
+            <div class="captcha-container">
+                <?php echo $captcha_code; ?>
             </div>
             <button type="submit" name="login" class="btn btn-large">Giriş Yap</button>
         </form>
-
-        <div class="logo-container">
-        <a href="https://obs.yeditepe.edu.tr" target="_blank">
-            <img src="https://seeklogo.com/images/Y/Yeditepe_Universitesi-logo-F2C90E3ECD-seeklogo.com.png" alt="Logo">
-        </a>
-    </div>
-
     </div>
 </div>
 
-<script>
-    document.getElementById('showRegister').addEventListener('click', function () {
-        document.getElementById('registerForm').classList.add('active');
-        document.getElementById('loginForm').classList.remove('active');
-    });
+<div class="logo-container">
+    <a href="https://obs.yeditepe.edu.tr">
+        <img src="https://seeklogo.com/images/Y/Yeditepe_Universitesi-logo-F2C90E3ECD-seeklogo.com.png" alt="Logo">
+    </a>
+</div>
 
-    document.getElementById('showLogin').addEventListener('click', function () {
-        document.getElementById('loginForm').classList.add('active');
-        document.getElementById('registerForm').classList.remove('active');
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#showRegister').click(function() {
+            $('.toggle-buttons').toggleClass('active');
+            $('#registerForm').toggleClass('active');
+            $('#loginForm').removeClass('active');
+        });
+
+        $('#showLogin').click(function() {
+            $('.toggle-buttons').toggleClass('active');
+            $('#loginForm').toggleClass('active');
+            $('#registerForm').removeClass('active');
+        });
     });
 </script>
-
 </body>
 </html>
