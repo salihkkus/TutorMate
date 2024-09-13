@@ -95,7 +95,7 @@ if (isset($_POST['forgot_password'])) {
             border: 3px solid white;
             box-shadow: 0 0 15px white;
             filter: blur(5px);
-            pointer-events: none; /* Kullanıcı etkileşimini engellemek için */
+            pointer-events: none;
         }
 
         .form-container {
@@ -270,7 +270,7 @@ if (isset($_POST['forgot_password'])) {
             <button type="submit" name="register" class="btn btn-large">Kayıt Ol</button>
         </form>
 
-        <!-- Giriş Formu -->
+        <!-- Kullanıcı Girişi Formu -->
         <form id="loginForm" method="POST">
             <div class="form-group">
                 <input type="text" name="username" class="form-control" placeholder="Kullanıcı Adı" required>
@@ -278,11 +278,11 @@ if (isset($_POST['forgot_password'])) {
             <div class="form-group">
                 <input type="password" name="password" class="form-control" placeholder="Şifre" required>
             </div>
-            <div class="form-group">
-                <input type="text" name="captcha" class="form-control" placeholder="CAPTCHA Kodu" required>
-            </div>
             <div class="captcha-container">
-                <?php echo $captcha_code; ?>
+                CAPTCHA Kodu: <?php echo $captcha_code; ?>
+            </div>
+            <div class="form-group">
+                <input type="text" name="captcha" class="form-control" placeholder="CAPTCHA Kodunu Girin" required>
             </div>
             <button type="submit" name="login" class="btn btn-large">Giriş Yap</button>
         </form>
@@ -295,20 +295,23 @@ if (isset($_POST['forgot_password'])) {
     </a>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <script>
-    $(document).ready(function() {
-        $('#showRegister').click(function() {
-            $('.toggle-buttons').toggleClass('active');
-            $('#registerForm').toggleClass('active');
-            $('#loginForm').removeClass('active');
-        });
+    const registerButton = document.getElementById('showRegister');
+    const loginButton = document.getElementById('showLogin');
+    const toggleButtons = document.querySelector('.toggle-buttons');
+    const registerForm = document.getElementById('registerForm');
+    const loginForm = document.getElementById('loginForm');
 
-        $('#showLogin').click(function() {
-            $('.toggle-buttons').toggleClass('active');
-            $('#loginForm').toggleClass('active');
-            $('#registerForm').removeClass('active');
-        });
+    registerButton.addEventListener('click', function () {
+        toggleButtons.classList.add('active');
+        registerForm.classList.add('active');
+        loginForm.classList.remove('active');
+    });
+
+    loginButton.addEventListener('click', function () {
+        toggleButtons.classList.add('active');
+        loginForm.classList.add('active');
+        registerForm.classList.remove('active');
     });
 </script>
 </body>
